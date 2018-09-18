@@ -4,8 +4,6 @@ require_relative '../lib/curator'
 require_relative '../lib/artist'
 require_relative '../lib/photograph'
 
-
-
 class CuratorTest < Minitest::Test
 
   def setup
@@ -163,6 +161,9 @@ class CuratorTest < Minitest::Test
     assert_equal [], not_found
   end
 
+
+  # --- from CSV ---
+
   def test_it_can_load_from_csv
     path = './data/photographs.csv'
     # id,name,artist_id,year
@@ -203,5 +204,37 @@ class CuratorTest < Minitest::Test
     assert_equal 6, after.count
   end
 
+
+  # --- Complex Search ---
+
+  def test_it_can_find_photos_by_date_range
+    path = './data/photographs.csv'
+    @curator.load_photographs(path)
+
+    range = (1950..1965)
+    found = @curator.photographs_taken_between(range)
+    assert_instance_of Array, found
+
+    first = found.first
+    assert_instance_of Photograph, first
+    assert_operator 1950, :<=, first.year.to_i
+    assert_operator 1965, :>=, first.year.to_i
+
+    last = found.last
+    assert_instance_of Photograph, last
+    assert_operator 1950, :<=, last.year.to_i
+    assert_operator 1965, :>=, last.year.to_i
+  end
+
+  def test_it_can_find_artist_ages_when_each_photo_was_taken
+    path = './data/photographs.csv'
+    @curator.load_photographs(path)
+    path = './data/artists.csv'
+    @curator.load_artists(path)
+    artist = @curator.find_artist_by_id("3")
+    found = @curator.artists_photographs_by_age(artist)
+    hash = {44=>"Identical Twins, Roselle, New Jersey", 39=>"Child with Toy Hand Grenade in Central Park"}
+    assert_equal hash, found
+  end
 
 end

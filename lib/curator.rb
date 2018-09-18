@@ -3,9 +3,6 @@ require 'pry'
 require 'CSV'
 
 
-
-
-
 class Curator
 
   attr_reader :artists, :photographs
@@ -73,6 +70,27 @@ class Curator
   def load_artists(path)
     sets = load_from_csv(path)
     sets.each { |attributes| @artists << Artist.new(attributes) }
+  end
+
+
+  # --- Complex Search ---
+
+  def photographs_taken_between(range)
+    @photographs.find_all { |photo| range.include?(photo.year.to_i) }
+  end
+
+  def artists_photographs_by_age(artist)
+    # PER SPEC, an artist can't take more than one
+    # photo per year (or at least we only care about one)
+    # otherwise, we'd be returing {age => [photo names], ...}
+    birth = artist.born.to_i
+    photos = find_photographs_by_artist(artist)
+    groups = photos.group_by { |photo| photo.year.to_i - birth }
+    groups = groups.each { |key, photos|
+      # last photo taken that year is the one returned
+      photos.each { |photo| groups[key] = photo.name }
+    }
+    return groups
   end
 
 
