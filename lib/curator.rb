@@ -1,6 +1,6 @@
 require 'pry'
 
-
+require 'CSV'
 
 
 
@@ -45,5 +45,35 @@ class Curator
     photogs = @artists.find_all { |photog| photog.country == country }
     list = photogs.map { |photog| find_photographs_by_artist(photog) }.flatten
   end
+
+
+  # --- from CSV ---
+
+  def load_from_csv(path)
+    rows = CSV.read(path)
+    headers, *data = rows
+    all = []
+    data.each { |row| all << make_hash(headers, row) }
+    return all
+  end
+
+  def make_hash(headers, data)
+    hash = {} ; index = 0
+    headers.each { |label|
+      hash[label.to_sym] = data[index]
+      index += 1
+    }; return hash
+  end
+
+  def load_photographs(path)
+    sets = load_from_csv(path)
+    sets.each { |attributes| @photographs << Photograph.new(attributes) }
+  end
+
+  def load_artists(path)
+    sets = load_from_csv(path)
+    sets.each { |attributes| @artists << Artist.new(attributes) }
+  end
+
 
 end

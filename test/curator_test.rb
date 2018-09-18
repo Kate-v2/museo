@@ -163,5 +163,45 @@ class CuratorTest < Minitest::Test
     assert_equal [], not_found
   end
 
+  def test_it_can_load_from_csv
+    path = './data/photographs.csv'
+    # id,name,artist_id,year
+    # 1,"Rue Mouffetard, Paris (Boy with Bottles)",1,1954
+    data = @curator.load_from_csv(path)
+    keys = [:id, :name, :artist_id, :year]
+    first = data.first
+    assert_equal keys, first.keys
+    assert_equal "1", first[:id]
+    name = "Rue Mouffetard, Paris (Boy with Bottles)"
+    assert_equal name, first[:name]
+    assert_equal "1", first[:artist_id]
+    assert_equal "1954", first[:year]
+  end
+
+  def test_it_can_make_a_hash
+    headers = ["1", "2"]
+    data = ["a", "b"]
+    hash = { :"1" => "a", :"2" => "b"}
+    assert_equal hash, @curator.make_hash(headers, data)
+  end
+
+  def test_it_can_load_photos_from_csv
+    before = @curator.photographs
+    assert_equal 0, before.count
+    after = @curator.photographs
+    path = './data/photographs.csv'
+    @curator.load_photographs(path)
+    assert_equal 4, after.count
+  end
+
+  def test_it_can_load_artists_from_csv
+    before = @curator.artists
+    assert_equal 0, before.count
+    after = @curator.artists
+    path = './data/artists.csv'
+    @curator.load_artists(path)
+    assert_equal 6, after.count
+  end
+
 
 end
